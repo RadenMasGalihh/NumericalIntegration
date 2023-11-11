@@ -1,0 +1,67 @@
+#Galih Adyatma
+#5302422053
+
+import math
+import numpy as np
+import matplotlib.pyplot as plt
+
+def velocity(t, g, m, c):
+    term1 = (g * m) / c
+    term2 = 1 - math.exp(- (c / m) * t)
+    v = term1 * term2
+    return v
+
+def simpsons_rule(f, a, b, n_segments):
+    h = (b - a) / n_segments
+    result = f(a) + f(b)
+    for i in range(1, n_segments):
+        x_i = a + i * h
+        result += 4 * f(x_i) if i % 2 == 1 else 2 * f(x_i)
+    result *= h / 3
+    return result
+
+def distance(t, g, m, c, n_segments):
+    
+    integrand = lambda x: (g * m) / c * (1 - math.exp(- (c / m) * x))
+
+   
+    integral = simpsons_rule(integrand, 0, t, n_segments)
+    return integral
+
+
+g = 9.8  # gravitational constant (m/s^2)
+m = 68.1  # mass of the parachutist (kg)
+c = 12.5  # drag coefficient (kg/s)
+t = 10   # time in seconds
+
+
+n_segments_values = [2, 4, 8, 16, 32]
+velocities = []
+
+for n_segments in n_segments_values:
+    time_points = np.linspace(0, t, 100)
+    velocities_segment = [(g * m) / c * (1 - math.exp(- (c / m) * x)) for x in time_points]
+    velocities.append(velocities_segment)
+
+
+distances = [distance(t, g, m, c, n_segments) for n_segments in n_segments_values]
+
+
+fig, axs = plt.subplots(2, 1, figsize=(8, 10))
+
+
+for i, (n_segments, velocity_segment) in enumerate(zip(n_segments_values, velocities)):
+    axs[0].plot(time_points, velocity_segment, label=f'Segments: {n_segments}')
+axs[0].legend()
+axs[0].set_xlabel('Time (s)')
+axs[0].set_ylabel('Velocity (m/s)')
+axs[0].set_title('Parachutist Velocity Over Time (Simpson\'s Rule)')
+
+
+axs[1].plot(n_segments_values, distances, marker='o', linestyle='-', color='b')
+axs[1].set_xlabel('Number of Segments')
+axs[1].set_ylabel('Distance (m)')
+axs[1].set_title('Parachutist Distance (Simpson\'s Rule)')
+
+plt.tight_layout()
+plt.show()
